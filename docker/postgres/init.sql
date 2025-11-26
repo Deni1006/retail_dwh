@@ -1,0 +1,2 @@
+CREATE DATABASE staging;
+CREATE DATABASE dwh_raw;

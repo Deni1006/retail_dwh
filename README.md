@@ -57,6 +57,7 @@ docker exec -it retail_dwh-dbt-1 dbt test
 ```
 
 Планы по развитию
+
 Визуализация данных через Metabase / Superset
 
 Добавление источника данных через API

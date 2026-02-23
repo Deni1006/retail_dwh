@@ -1,0 +1,38 @@
+version: 2
+
+models:
+  - name: silver_orders
+    description: "Order line items (one row = one product within an order)."
+    columns:
+      - name: row_id
+        description: "Unique row identifier from source dataset."
+        tests:
+          - not_null
+          - unique
+
+      - name: order_id
+        description: "Order identifier."
+        tests:
+          - not_null
+
+      - name: customer_id
+        description: "Customer identifier."
+        tests:
+          - relationships:
+              to: ref('silver_customers')
+              field: customer_id
+
+      - name: segment
+        description: "Customer segment."
+        tests:
+          - accepted_values:
+              values: ["Consumer", "Corporate", "Home Office"]
+
+  - name: silver_customers
+    description: "Customer dimension-like table (distinct customers)."
+    columns:
+      - name: customer_id
+        description: "Customer identifier."
+        tests:
+          - not_null
+          - unique

@@ -4,3 +4,4 @@ __pycache__/
 logs/
 postgres_data/
 .airflow/
+dbt/target/

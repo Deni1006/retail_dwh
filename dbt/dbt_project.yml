@@ -18,7 +18,7 @@ clean-targets:
 
 models:
   retail_dwh:
-    # bronze:              # ЗАКОММЕНТИРОВАТЬ ИЛИ УДАЛИТЬ
+    # bronze:              # ЗАКОММЕНТИРОВАЛ
     #   +materialized: table
     #   +schema: bronze
     silver:

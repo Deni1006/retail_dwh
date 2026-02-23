@@ -1,0 +1,20 @@
+version: 2
+
+models:
+  - name: gold_customer_metrics
+    description: "Gold metrics per customer"
+    columns:
+      - name: customer_id
+        tests:
+          - not_null
+          - unique
+
+  - name: gold_sales_trands
+    description: "Gold sales trands aggregated by month"
+    columns:
+      - name: sales_month
+        tests:
+          - not_null
+
+
+# 3 теста: not null и unique на customer_id, not null на month

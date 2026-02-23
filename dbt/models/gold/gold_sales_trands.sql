@@ -1,26 +1,14 @@
 {{ config(tags=["gold"]) }}
 
-SELECT 
-  -- 🟢 УМНОЕ ПРЕОБРАЗОВАНИЕ: обрабатываем оба формата дат
-  DATE_TRUNC('month', 
-    CASE 
-      WHEN order_date LIKE '%/%' THEN TO_DATE(order_date, 'DD/MM/YYYY')
-      ELSE order_date::date
-    END
-  ) as sales_month,
+select
+  date_trunc('month', order_date)::date as sales_month,
   region,
   category,
-  SUM(sales_amount) as monthly_sales,
-  COUNT(DISTINCT order_id) as order_count,
-  COUNT(DISTINCT customer_id) as unique_customers
-FROM {{ ref('silver_orders') }}
-GROUP BY 
-  DATE_TRUNC('month', 
-    CASE 
-      WHEN order_date LIKE '%/%' THEN TO_DATE(order_date, 'DD/MM/YYYY')
-      ELSE order_date::date
-    END
-  ),
-  region, 
-  category
-ORDER BY sales_month DESC, monthly_sales DESC
+  sum(sales_amount) as monthly_sales,
+  count(distinct order_id) as order_count,
+  count(distinct customer_id) as unique_customers
+from {{ ref('silver_orders') }}
+where order_date is not null
+group by
+  1, 2, 3
+order by sales_month desc, monthly_sales desc

@@ -1,48 +1,87 @@
-{{ config(tags=["silver"]) }}
+{{ config(materialized='table') }}
 
-WITH ranked_orders AS (
-  SELECT 
-    "Row_ID" as row_id,
-    "Order_ID" as order_id,
-    -- 🟢 УПРОЩАЕМ: Оставляем даты как есть (text), преобразуем позже
-    "Order_Date" as order_date,
-    "Ship_Date" as ship_date,
-    "Ship_Mode" as ship_mode,
-    "Customer_ID" as customer_id,
-    "Customer_Name" as customer_name,
-    "Segment" as segment,
-    "Country" as country,
-    "City" as city,
-    "State" as state,
-    "Postal_Code" as postal_code,
-    "Region" as region,
-    "Product_ID" as product_id,
-    "Category" as category,
-    "Sub_Category" as sub_category,
-    "Product_Name" as product_name,
-    "Sales"::decimal as sales_amount,
-    ROW_NUMBER() OVER(PARTITION BY "Order_ID" ORDER BY "Order_Date" DESC) as rn
-  FROM {{ source('raw', 'superstore_raw') }}
-  WHERE "Order_ID" IS NOT NULL
+with src as (
+
+    select
+        -- ключ строки (лучший вариант для дедупа в Superstore)
+        nullif(trim(row_id), '')::int as row_id,
+
+        nullif(trim(order_id), '') as order_id,
+
+        -- даты: ловим самый частый формат D/M/YYYY или DD/MM/YYYY
+        case
+            when order_date ~ '^\s*\d{1,2}/\d{1,2}/\d{4}\s*$'
+                then to_date(trim(order_date), 'FMDD/FMMM/YYYY')
+            when order_date ~ '^\s*\d{4}-\d{2}-\d{2}\s*$'
+                then trim(order_date)::date
+            else null
+        end as order_date,
+
+        case
+            when ship_date ~ '^\s*\d{1,2}/\d{1,2}/\d{4}\s*$'
+                then to_date(trim(ship_date), 'FMDD/FMMM/YYYY')
+            when ship_date ~ '^\s*\d{4}-\d{2}-\d{2}\s*$'
+                then trim(ship_date)::date
+            else null
+        end as ship_date,
+
+        nullif(trim(ship_mode), '') as ship_mode,
+
+        nullif(trim(customer_id), '') as customer_id,
+        nullif(trim(customer_name), '') as customer_name,
+        nullif(trim(segment), '') as segment,
+
+        nullif(trim(country), '') as country,
+        nullif(trim(city), '') as city,
+        nullif(trim(state), '') as state,
+        nullif(trim(postal_code), '') as postal_code,
+        nullif(trim(region), '') as region,
+
+        nullif(trim(product_id), '') as product_id,
+        nullif(trim(category), '') as category,
+        nullif(trim(sub_category), '') as sub_category,
+        nullif(trim(product_name), '') as product_name,
+
+        -- выручка по позиции заказа
+        nullif(trim(sales), '')::numeric(18, 4) as sales_amount
+
+    from {{ source('raw', 'superstore_raw') }}
+
+    where nullif(trim(order_id), '') is not null
+
+),
+
+dedup as (
+
+    -- Дедуп: оставляем одну запись на row_id (если вдруг дубль строки)
+    select
+        *,
+        row_number() over (
+            partition by row_id
+            order by order_date desc nulls last
+        ) as rn
+    from src
+
 )
-SELECT 
-  row_id,
-  order_id,
-  order_date,
-  ship_date,
-  ship_mode,
-  customer_id,
-  customer_name,
-  segment,
-  country,
-  city,
-  state,
-  postal_code,
-  region,
-  product_id,
-  category,
-  sub_category,
-  product_name,
-  sales_amount
-FROM ranked_orders 
-WHERE rn = 1
+
+select
+    row_id,
+    order_id,
+    order_date,
+    ship_date,
+    ship_mode,
+    customer_id,
+    customer_name,
+    segment,
+    country,
+    city,
+    state,
+    postal_code,
+    region,
+    product_id,
+    category,
+    sub_category,
+    product_name,
+    sales_amount
+from dedup
+where rn = 1

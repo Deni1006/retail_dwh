@@ -1,14 +1,14 @@
 {{ config(tags=["silver"]) }}
 
-SELECT 
-  "Customer_ID" as customer_id,
-  "Customer_Name" as customer_name,
-  "Segment" as segment,
-  "Country" as country,
-  "City" as city, 
-  "State" as state,
-  "Postal_Code" as postal_code,
-  "Region" as region
-FROM {{ source('raw', 'superstore_raw') }}
-WHERE "Customer_ID" IS NOT NULL
-GROUP BY 1,2,3,4,5,6,7,8
+select
+  customer_id,
+  max(customer_name) as customer_name,
+  max(segment) as segment,
+  max(country) as country,
+  max(city) as city,
+  max(state) as state,
+  max(postal_code) as postal_code,
+  max(region) as region
+from {{ ref('silver_orders') }}
+where customer_id is not null
+group by customer_id

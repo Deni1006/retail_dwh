@@ -54,6 +54,7 @@ PostgreSQL — порт 5432 (airflow / airflow)
 Запуск dbt-моделей (после старта контейнеров):
 docker exec -it retail_dwh-dbt-1 dbt run
 docker exec -it retail_dwh-dbt-1 dbt test
+```
 
 Планы по развитию
 Визуализация данных через Metabase / Superset

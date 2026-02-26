@@ -13,6 +13,7 @@ x-airflow-common: &airflow-common
     - ./plugins:/opt/airflow/plugins
     - ./data:/opt/airflow/data
     - ./dbt:/opt/airflow/dbt
+    - ./tests:/opt/airflow/tests
 
 services:
   postgres:

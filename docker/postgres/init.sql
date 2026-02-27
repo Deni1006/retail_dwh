@@ -1,2 +1,3 @@
 CREATE DATABASE staging;
 CREATE DATABASE dwh_raw;
+CREATE DATABASE metabase;

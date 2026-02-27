@@ -5,3 +5,4 @@ logs/
 postgres_data/
 .airflow/
 dbt/target/
+metabase_data/
